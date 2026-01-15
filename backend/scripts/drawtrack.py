@@ -48,9 +48,7 @@ for _, corner in circuit_info.corners.iterrows(): # type: ignore
     plt.scatter(text_x, text_y, color="grey", s=140)
     plt.plot([track_x, text_x], [track_y, text_y], color="grey")
 
-    plt.text(text_x, text_y, txt,
-        va="center_baseline", ha="center", size="small", color="white")
-
+    plt.text(text_x, text_y, txt, va="center_baseline", ha="center", size="small", color="white")
 
 plt.title(session.event["Location"])
 plt.xticks([])
