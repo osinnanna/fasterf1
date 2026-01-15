@@ -11,9 +11,17 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 
 document.body.appendChild( renderer.domElement );
 
-const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+const geometry = new THREE.BoxGeometry( 1, 1, 1);
+const platformGeo = new THREE.BoxGeometry( 40, 2, 40 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+const materialRed = new THREE.MeshBasicMaterial( { color: 0x8b0000 } );
+
+
 const cube = new THREE.Mesh( geometry, material );
+const cube2 = new THREE.Mesh( geometry, material );
+const platformCube = new THREE.Mesh( platformGeo, materialRed )
+
+platformCube.position.y = -10;
 
 camera.position.z = 14;
 camera.position.y = 10;
@@ -21,7 +29,6 @@ camera.rotation.x = -.6;
 
 const radius = 4;
 
-const cube2 = new THREE.Mesh( geometry, material );
 const path = [
     { x: 0, z: 0 },
     { x: 5, z: 5 },
@@ -33,9 +40,12 @@ const path = [
 let duration = 4;
 const pointCount = path.length - 1;
 
-scene.add( cube, cube2 );
+scene.add( cube, cube2, platformCube );
 
+const offset = new THREE.Vector3(0, 10, 14);
+const targetCameraPosition = new THREE.Vector3();
 function animate() {
+    // cube one circular motion
     // Want to try updating the car's positon so it moves in a circular path so thats the z and x positions
 
     const t = clock.getElapsedTime();
@@ -61,6 +71,15 @@ function animate() {
 
     cube2.position.x = p0.x + (p1.x - p0.x) * alpha;
     cube2.position.z = p0.z + (p1.z - p0.z) * alpha;
+
+
+    // Instead of .copy().add(), we calculate where the camera SHOULD be
+    targetCameraPosition.copy(cube2.position).add(offset);
+
+    camera.position.lerp(targetCameraPosition, 0.05);
+
+
+    camera.lookAt(cube2.position);
 
     renderer.render( scene, camera );
 }
