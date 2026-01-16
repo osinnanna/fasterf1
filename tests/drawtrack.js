@@ -35,13 +35,21 @@ function createCorners(cornerData, targetScene) {
 const controls = new FlyControls(camera, renderer.domElement);
 controls.movementSpeed = 1000;
 controls.rollSpeed = Math.PI / 24;
+controls.autoForward = false;
+controls.dragToLook = true;
 camera.position.set(0, 4000, 14000);
+
+
+let pathData = null;
+let pathIndex = 0;
 
 async function loadTrack() {
     try {
         const response = await fetch("./silverstone.json");
         const data = await response.json();
         
+        pathData = data.path;
+
         createTrackLine(data.path, scene);
         createCorners(data.corners, scene);
     } catch (error) {
@@ -51,11 +59,16 @@ async function loadTrack() {
 }
 
 
+const geometry = new THREE.BoxGeometry(50, 50, 50);
+const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+
+const car = new THREE.Mesh(geometry, material);
+scene.add(car);
+
 loadTrack();
 
 
 
-// testing with a controller
 let gamepad = null;
 
 window.addEventListener("gamepadconnected", (e) => {
@@ -64,23 +77,37 @@ window.addEventListener("gamepadconnected", (e) => {
 });
 
 
+const offset = new THREE.Vector3(0, 13000, 5);
+const targetCarPosition = new THREE.Vector3();
+
+function followCar(delta) {
+    targetCarPosition.copy(car.position).add(offset);
+
+    camera.position.lerp(targetCarPosition, 0.2);
+    camera.lookAt(car.position);
+}
+
+
 function animate() {
     const delta = clock.getDelta();
+    
+    if (pathData && pathData.length > 0) {
+        const currentPoint = pathData[pathIndex];
 
-    const gamepads = navigator.getGamepads();
-    if (gamepads[0]) {
-        const gp = gamepads[0];
+        car.position.set(currentPoint.x, currentPoint.y, currentPoint.z);
 
-        const movementSpeed = 5000 * delta;
-        camera.translateX(gp.axes[0] * movementSpeed);
-        camera.translateZ(gp.axes[1] * movementSpeed);
+        const nextIndex = (pathIndex + 1) % pathData.length;
+        const nextPoint = pathData[nextIndex];
+        car.lookAt(nextPoint.x, nextPoint.y, nextPoint.z);
 
-        const lookSpeed = 2 * delta;
-        camera.rotation.y -= gp.axes[2] * lookSpeed;
-        camera.rotation.x -= gp.axes[3] * lookSpeed;
+        pathIndex++;
+
+        if (pathIndex >= pathData.length) {
+            pathIndex = 0;
+        }
     }
 
-    controls.update(delta);
+    // followCar(delta);
 
     renderer.render(scene, camera);
 }
