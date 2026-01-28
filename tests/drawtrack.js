@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { FlyControls } from "three/addons/controls/FlyControls.js"
 import { loadTrack, loadVerstappenData, findPointAtTime } from "./src/functions";
+import { startCountdown } from "./src/countdown"
 
 const scene = new THREE.Scene()
 let nearPoint, farPoint
@@ -30,12 +31,25 @@ scene.add(car);
 
 loadTrack(scene);
 let verPos = null;
+// async function init() {
+//     verPos = await loadVerstappenData();
+//     renderer.setAnimationLoop(animate);
+// }
+
 async function init() {
     verPos = await loadVerstappenData();
-    renderer.setAnimationLoop(animate);
 }
 
 init();
+
+const countdownElement = document.getElementById("countdown");
+if (countdownElement) {
+    startCountdown(countdownElement, () => {
+        renderer.setAnimationLoop(animate);
+    });
+} else {
+    renderer.setAnimationLoop(animate);
+}
 
 const offset = new THREE.Vector3(0, 10000, -1200);
 const targetCarPosition = new THREE.Vector3();
