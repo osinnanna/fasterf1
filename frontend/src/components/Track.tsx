@@ -27,8 +27,10 @@ export function Track(targetScene: THREE.Scene, dataCoords: PointsCoords[]) {
         wireframe: false 
     });
 
-    const trackMesh = new THREE.Mesh(geometry, material);
-    targetScene.add(trackMesh);
+    const track = new THREE.Mesh(geometry, material);
+    targetScene.add(track);
+
+    return track;
 }
 
 // export function Track(targetScene: THREE.Scene, dataCoords: PointsCoords[]) {

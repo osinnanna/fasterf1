@@ -4,16 +4,67 @@ import * as THREE from "three";
 import Cube from "./Cube"
 import { Track } from "./Track";
 import { useRace } from "../context/RaceContext";
+import type { LapPoint, PointsCoords } from "../models/types";
 
-const CAMERAOPTIONS = { fov: 75, aspect: window.innerWidth / window.innerHeight, near: 0.1, far: 10000 };
+const CAMERAOPTIONS = { fov: 75, aspect: window.innerWidth / window.innerHeight, near: 0.1, far: 100000 };
+
+function findPointAtTime(path: LapPoint[], timeSeconds: number): PointsCoords {
+    if (!Array.isArray(path) || path.length === 0) {
+        return { x: 0, y: 0, z: 0 };
+    }
+    if (path.length === 1) {
+        return path[0]!;
+    }
+
+    const lastIndex = path.length - 1;
+    const startPoint = path[0];
+    const endPoint = path[lastIndex];
+
+    if (startPoint && endPoint) {
+        const startTime = startPoint.t;
+        const endTime = endPoint.t;
+
+        if (endTime < startTime) return path[0]!;
+
+        let t = timeSeconds % endTime;
+        if (t < 0) t += endTime;
+
+        if (t <= startTime) return startPoint;
+        if (t >= endTime) return endPoint;
+
+        let low = 0;
+        let high = lastIndex;
+
+        while (high - low > 1) {
+            const mid = Math.floor((low + high) / 2);
+            if (path[mid]!.t <= t) low = mid;
+            else high = mid;
+        }
+
+        const p0 = path[low];
+        const p1 = path[high];
+        const span = p1!.t - p0!.t;
+        if (span <= 0) {
+            return p0!;
+        }
+        const alpha = (t - p0!.t) / span;
+        return {
+            x: p0!.x + (p1!.x - p0!.x) * alpha,
+            y: p0!.y + (p1!.y - p0!.y) * alpha,
+            z: p0!.z + (p1!.z - p0!.z) * alpha
+        };
+    };
+    return path[0] || { x: 0, y: 0, z: 0 }
+}
 
 export default function Scene() {
     const sceneRef = useRef<THREE.Scene | null>(null);
-    const { trackData, loading, error } = useRace();
+    const { lapData, trackData, loading, error } = useRace();
 
     useEffect(() => {
         if (!trackData) return;
-
+        const clock = new THREE.Clock();
+        
         sceneRef.current = new THREE.Scene();
         const scene = sceneRef.current;
         const camera = new THREE.PerspectiveCamera(...Object.values(CAMERAOPTIONS));
@@ -23,16 +74,30 @@ export default function Scene() {
         document.body.appendChild(renderer.domElement);
 
         const cube = Cube(scene);
-        Track(scene, trackData.path)
+        const track = Track(scene, trackData.path);
 
-        camera.position.z = 5;
+        // camera.position.z = 5;
+        // camera.position.y = 7200;
+        camera.position.set(400, 10000, 4400)
+        camera.lookAt(new THREE.Vector3(4000, 0, 4000)) // good view
 
         let animationId: number;
         function animate() {
             animationId = requestAnimationFrame(animate);
-            cube.rotation.x += 0.01
-            cube.rotation.y += 0.01
-            renderer.render(scene, camera)
+
+            
+            const time = clock.getElapsedTime();
+            if (lapData?.path && lapData?.path.length > 0) {
+                const point = findPointAtTime(lapData.path, time);
+                cube.position.set(point.x, point.y, point.z)
+            }
+
+            // cube.position.set(lapData?.path.at(1))
+
+
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            renderer.render(scene, camera);
         }
         animate();
 
