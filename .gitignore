@@ -219,3 +219,7 @@ web_modules/
 
 
 .vscode/
+
+# internal documentation and 
+NOTES.md
+drivers.jsonc

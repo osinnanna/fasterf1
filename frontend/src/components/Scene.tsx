@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import * as THREE from "three";
 import Cube from "./Cube"
 import { Track } from "./Track";
@@ -61,10 +61,11 @@ export default function Scene() {
     const sceneRef = useRef<THREE.Scene | null>(null);
     const { lapData, trackData, loading, error } = useRace();
 
+
     useEffect(() => {
         if (!trackData) return;
-        const clock = new THREE.Clock();
-        
+        const clock = new THREE.Clock(false);
+
         sceneRef.current = new THREE.Scene();
         const scene = sceneRef.current;
         const camera = new THREE.PerspectiveCamera(...Object.values(CAMERAOPTIONS));
@@ -81,33 +82,42 @@ export default function Scene() {
         camera.position.set(400, 10000, 4400)
         camera.lookAt(new THREE.Vector3(4000, 0, 4000)) // good view
 
+        const handleStart = () => {
+            console.log("Race started via event");
+            clock.start();
+        }
+
+        window.addEventListener("RACE_START", handleStart);
+
         let animationId: number;
         function animate() {
             animationId = requestAnimationFrame(animate);
 
-            
-            const time = clock.getElapsedTime();
-            if (lapData?.path && lapData?.path.length > 0) {
-                const point = findPointAtTime(lapData.path, time);
-                cube.position.set(point.x, point.y, point.z)
+            const dataStatus = (lapData?.path) && (lapData.path.length > 0);
+            if (dataStatus) {
+                if (clock.running) {
+                    const time = clock.getElapsedTime();
+                    const point = findPointAtTime(lapData.path, time);
+                    cube.position.set(point.x, point.y, point.z)
+                } else {
+                    const startPoint = lapData.path[0];
+                    if (startPoint) cube.position.set(startPoint.x, startPoint.y, startPoint.z);
+                }
             }
 
-            // cube.position.set(lapData?.path.at(1))
-
-
-            cube.rotation.x += 0.01;
-            cube.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
+
         animate();
 
 
         return () => {
+            window.removeEventListener("RACE_START", handleStart);
             cancelAnimationFrame(animationId);
             renderer.dispose();
             document.body.removeChild(renderer.domElement);
         };
-    }, [trackData]);
+    }, [trackData, lapData]);
 
     if (loading) return <div>Loading Race Data</div>
     if (error) return <div>Error: {error.message}</div>
