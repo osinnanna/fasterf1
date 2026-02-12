@@ -1,5 +1,4 @@
-#%%
-
+## We are getting track data and parsing it into json using the fast f1 package
 import json
 import numpy as np
 import fastf1
@@ -36,6 +35,6 @@ data = {
     "corners": corners
 }
 
-with open("../json/silverstone.json", "w") as f:
+with open("./../json/silverstone.json", "w") as f:
     json.dump(data, f)
 # %%

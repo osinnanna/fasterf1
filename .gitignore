@@ -220,6 +220,8 @@ web_modules/
 
 .vscode/
 
-# internal documentation and 
+# internal documentation and assets
 NOTES.md
 drivers.jsonc
+cache/
+json/
