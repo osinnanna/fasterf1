@@ -18,7 +18,7 @@ track_points = []
 for i, row in pos.iterrows():
     track_points.append({
         "x": row["X"],
-        "y": 0,
+        "y": row["Z"],
         "z": row["Y"]
     })
 

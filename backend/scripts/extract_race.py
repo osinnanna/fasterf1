@@ -20,10 +20,10 @@ def resample_telemetry(telemetry_df, *, target_fps):
     uniform_times  = np.arange(start_time, end_time, frame_interval)
 
     resampled_data = {
-        "x": np.round(np.interp(uniform_times, time_seconds, telemetry_df["X"].values)),
-        "y": np.round(np.interp(uniform_times, time_seconds, telemetry_df["Y"].values)),
-        "z": np.round(np.interp(uniform_times, time_seconds, telemetry_df["Z"].values)),
-        "speed": np.round(np.interp(uniform_times, time_seconds, telemetry_df["Speed"].values)),
+        "x": np.round(np.interp(uniform_times, time_seconds, telemetry_df["X"].values), 2),
+        "y": np.round(np.interp(uniform_times, time_seconds, telemetry_df["Z"].values), 2),
+        "z": np.round(np.interp(uniform_times, time_seconds, telemetry_df["Y"].values), 2),
+        "speed": np.round(np.interp(uniform_times, time_seconds, telemetry_df["Speed"].values), 2),
     }
 
     return pd.DataFrame(resampled_data)

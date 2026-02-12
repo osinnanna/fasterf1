@@ -22,7 +22,7 @@ function getLerpPosition(
     const frameIndex = Math.floor(exactFrame);
     const alpha = exactFrame - frameIndex;
 
-    if (frameIndex >= telemetry.length -1) {
+    if (frameIndex >= telemetry.length - 1) {
         const lastFrame = telemetry[telemetry.length - 1];
         return lastFrame ? { x: lastFrame.x, y: lastFrame.y, z: lastFrame.z } : { x: 0, y: 0, z: 0 };
     }
@@ -57,8 +57,7 @@ export default function Scene() {
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        const cube = Cube(scene);
-        const track = Track(scene, trackData.path);
+        Track(scene, trackData.path);
 
         const driverCars: Array<{ mesh: THREE.Mesh; driver: Driver }> = [];
 
@@ -102,7 +101,7 @@ export default function Scene() {
             if (raceData && clock.running) {
                 const raceTime = clock.getElapsedTime();
 
-                driverCars.forEach(({ mesh, driver}) => {
+                driverCars.forEach(({ mesh, driver }) => {
                     const position = getLerpPosition(driver.telemetry, raceTime, raceData.fps, driver.finishTime);
                     mesh.position.set(position.x, position.y, position.z);
                 });
