@@ -1,65 +1,48 @@
-import { h } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import Cube from "./Cube"
 import { Track } from "./Track";
 import { useRace } from "../context/RaceContext";
-import type { LapPoint, PointsCoords } from "../models/types";
+import type { Driver, DriverTelemetry, PointsCoords } from "../model/types";
 
 const CAMERAOPTIONS = { fov: 75, aspect: window.innerWidth / window.innerHeight, near: 0.1, far: 100000 };
 
-function findPointAtTime(path: LapPoint[], timeSeconds: number): PointsCoords {
-    if (!Array.isArray(path) || path.length === 0) {
-        return { x: 0, y: 0, z: 0 };
+function getLerpPosition(
+    telemetry: DriverTelemetry[],
+    raceTime: number,
+    fps: number,
+    finishTime: number,
+): PointsCoords {
+    if (raceTime >= finishTime) {
+        const lastFrame = telemetry[telemetry.length - 1];
+        return lastFrame ? { x: lastFrame.x, y: lastFrame.y, z: lastFrame.z } : { x: 0, y: 0, z: 0 };
     }
-    if (path.length === 1) {
-        return path[0]!;
+
+    const exactFrame = raceTime * fps;
+    const frameIndex = Math.floor(exactFrame);
+    const alpha = exactFrame - frameIndex;
+
+    if (frameIndex >= telemetry.length -1) {
+        const lastFrame = telemetry[telemetry.length - 1];
+        return lastFrame ? { x: lastFrame.x, y: lastFrame.y, z: lastFrame.z } : { x: 0, y: 0, z: 0 };
     }
 
-    const lastIndex = path.length - 1;
-    const startPoint = path[0];
-    const endPoint = path[lastIndex];
+    const currentFrame = telemetry[frameIndex];
+    const nextFrame = telemetry[frameIndex + 1];
 
-    if (startPoint && endPoint) {
-        const startTime = startPoint.t;
-        const endTime = endPoint.t;
+    if (!currentFrame || !nextFrame) return { x: 0, y: 0, z: 0 };
 
-        if (endTime < startTime) return path[0]!;
 
-        let t = timeSeconds % endTime;
-        if (t < 0) t += endTime;
-
-        if (t <= startTime) return startPoint;
-        if (t >= endTime) return endPoint;
-
-        let low = 0;
-        let high = lastIndex;
-
-        while (high - low > 1) {
-            const mid = Math.floor((low + high) / 2);
-            if (path[mid]!.t <= t) low = mid;
-            else high = mid;
-        }
-
-        const p0 = path[low];
-        const p1 = path[high];
-        const span = p1!.t - p0!.t;
-        if (span <= 0) {
-            return p0!;
-        }
-        const alpha = (t - p0!.t) / span;
-        return {
-            x: p0!.x + (p1!.x - p0!.x) * alpha,
-            y: p0!.y + (p1!.y - p0!.y) * alpha,
-            z: p0!.z + (p1!.z - p0!.z) * alpha
-        };
-    };
-    return path[0] || { x: 0, y: 0, z: 0 }
+    // We are going to return the slope (depended value based on a given value so it will smoothly transition)
+    return {
+        x: currentFrame.x + (nextFrame.x - currentFrame.x) * alpha,
+        y: currentFrame.y + (nextFrame.y - currentFrame.y) * alpha,
+        z: currentFrame.z + (nextFrame.z - currentFrame.z) * alpha,
+    }
 }
-
 export default function Scene() {
     const sceneRef = useRef<THREE.Scene | null>(null);
-    const { lapData, trackData, loading, error } = useRace();
+    const { raceData, trackData, loading, error } = useRace();
 
 
     useEffect(() => {
@@ -77,6 +60,29 @@ export default function Scene() {
         const cube = Cube(scene);
         const track = Track(scene, trackData.path);
 
+        const driverCars: Array<{ mesh: THREE.Mesh; driver: Driver }> = [];
+
+        if (raceData) {
+            console.log(`Creating ${raceData.drivers.length} driverCars`);
+
+            raceData.drivers.forEach((driver) => {
+                const carMesh = Cube(scene);
+
+                driverCars.push({
+                    mesh: carMesh,
+                    driver: driver
+                });
+
+                const startingPos = driver.telemetry[0];
+                if (startingPos) {
+                    carMesh.position.set(startingPos.x, startingPos.y, startingPos.z)
+                }
+
+                console.log(`Created car for ${driver.id}`)
+            })
+
+        }
+
         // camera.position.z = 5;
         // camera.position.y = 7200;
         camera.position.set(400, 10000, 4400)
@@ -93,16 +99,20 @@ export default function Scene() {
         function animate() {
             animationId = requestAnimationFrame(animate);
 
-            const dataStatus = (lapData?.path) && (lapData.path.length > 0);
-            if (dataStatus) {
-                if (clock.running) {
-                    const time = clock.getElapsedTime();
-                    const point = findPointAtTime(lapData.path, time);
-                    cube.position.set(point.x, point.y, point.z)
-                } else {
-                    const startPoint = lapData.path[0];
-                    if (startPoint) cube.position.set(startPoint.x, startPoint.y, startPoint.z);
-                }
+            if (raceData && clock.running) {
+                const raceTime = clock.getElapsedTime();
+
+                driverCars.forEach(({ mesh, driver}) => {
+                    const position = getLerpPosition(driver.telemetry, raceTime, raceData.fps, driver.finishTime);
+                    mesh.position.set(position.x, position.y, position.z);
+                });
+            } else if (raceData) {
+                driverCars.forEach(({ mesh, driver }) => {
+                    const startingPos = driver.telemetry[0];
+                    if (startingPos) {
+                        mesh.position.set(startingPos.x, startingPos.y, startingPos.z);
+                    }
+                })
             }
 
             renderer.render(scene, camera);
@@ -117,7 +127,7 @@ export default function Scene() {
             renderer.dispose();
             document.body.removeChild(renderer.domElement);
         };
-    }, [trackData, lapData]);
+    }, [trackData, raceData]);
 
     if (loading) return <div>Loading Race Data</div>
     if (error) return <div>Error: {error.message}</div>

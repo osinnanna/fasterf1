@@ -1,10 +1,10 @@
-import { useState, useEffect } from "preact/hooks";
-import type { LapData } from "../models/types";
+import { useState, useEffect } from "react";
+import type { RaceData } from "../model/types";
 import { RaceAPI } from "../api/raceApi";
 
 
 export function useRaceData() {
-    const [data, setData] = useState<LapData | null>(null);
+    const [data, setData] = useState<RaceData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
@@ -14,14 +14,14 @@ export function useRaceData() {
         async function load() {
             try {
                 setLoading(true);
-                const result = await RaceAPI.fetchVerData();
+                const result = await RaceAPI.fetchRace();
                 if (!cancelled) {
                     setData(result);
                     setError(null);
                 }
             } catch (error) {
                 if (!cancelled) {
-                    setError(new Error("There was an error fetching VerData"))
+                    setError(new Error("There was an error fetching RaceData"))
                 }
             } finally {
                 if (!cancelled) {

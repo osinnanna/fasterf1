@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { PointsCoords } from "../models/types";
+import type { PointsCoords } from "../../../oldfrontend/src/models/types";
 
 export function Track(targetScene: THREE.Scene, dataCoords: PointsCoords[]) {
     const TRACK_WIDTH: number = 20;

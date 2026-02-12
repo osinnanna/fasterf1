@@ -1,12 +1,11 @@
-import { h, createContext } from "preact";
-import type { LapData, TrackData } from "../models/types";
+import { createContext, useContext } from "react";
+import type { RaceData, TrackData } from "../model/types";
 import { useRaceData } from "../hooks/useRaceData";
 import { useTrackData } from "../hooks/useTrackData";
-import { useContext } from "preact/hooks";
 
 
 interface RaceContextValue {
-    lapData: LapData | null;
+    raceData: RaceData | null;
     trackData: TrackData | null;
     loading: boolean;
     error: Error | null;
@@ -15,14 +14,14 @@ interface RaceContextValue {
 const RaceContext = createContext<RaceContextValue | undefined>(undefined);
 
 export function RaceProvider({ children }: {children : any}) {
-    const { data: lapData, loading: lapLoading, error: lapError } = useRaceData();
+    const { data: raceData, loading: raceLoading, error: raceError  } = useRaceData();
     const { data: trackData, loading: trackLoading, error: trackError } = useTrackData();
 
     const value: RaceContextValue = {
-        lapData,
+        raceData,
         trackData,
-        loading: lapLoading || trackLoading,
-        error: lapError || trackError,
+        loading: raceLoading || trackLoading,
+        error: raceError || trackError,
     };
 
     return <RaceContext.Provider value={value}>{children}</RaceContext.Provider>;

@@ -1,7 +1,6 @@
-import { h } from "preact";
+import { useRef } from "react";
 import Scene from "./components/Scene";
 import { RaceProvider } from "./context/RaceContext";
-import { useRef } from "preact/hooks";
 import { startCountdown } from "./components/countdown";
 import "./styles/index.css";
 

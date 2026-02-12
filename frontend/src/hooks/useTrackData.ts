@@ -1,5 +1,5 @@
-import { useEffect, useState } from "preact/hooks";
-import type { TrackData } from "../models/types";
+import { useEffect, useState } from "react";
+import type { TrackData } from "../model/types";
 import { RaceAPI } from "../api/raceApi";
 
 export function useTrackData() {
