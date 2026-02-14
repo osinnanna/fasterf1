@@ -38,8 +38,7 @@ export function Track(targetScene: THREE.Scene, dataCoords: PointsCoords[]) {
 }
 
 function addTrackOutline(scene: THREE.Scene, curve: THREE.CatmullRomCurve3, trackWidth: number) {
-    const LINE_WIDTH = 0.5;
-
+    // Try THREE.Line2
     const curvePoints = curve.getPoints(500);
 
     const leftPoints: THREE.Vector3[] = [];
@@ -64,7 +63,6 @@ function addTrackOutline(scene: THREE.Scene, curve: THREE.CatmullRomCurve3, trac
 
     const lineMaterial = new THREE.LineBasicMaterial({
         color: 0xffffff,
-        linewidth: 2
     });
 
     const leftLine = new THREE.Line(leftLineGeometry, lineMaterial);
