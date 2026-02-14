@@ -2,7 +2,7 @@ import * as THREE from "three";
 import type { PointsCoords } from "../model/types";
 
 export function Track(targetScene: THREE.Scene, dataCoords: PointsCoords[]) {
-    const TRACK_WIDTH: number = 20;
+    const TRACK_WIDTH: number = 50;
     const TRACK_THICKNESS: number = 2;
 
     const points = dataCoords.map(p => new THREE.Vector3(p.x, p.y, p.z));

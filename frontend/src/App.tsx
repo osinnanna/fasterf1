@@ -3,6 +3,7 @@ import Scene from "./components/Scene";
 import { RaceProvider } from "./context/RaceContext";
 import { startCountdown } from "./components/countdown";
 import "./styles/index.css";
+import { LeaderBoardItem } from "./uicomponents/LeaderBoardItem";
 
 const RaceControls = () => {
     const displayRef = useRef<HTMLDivElement>(null);
@@ -39,6 +40,7 @@ export default function App() {
                 <div className="ui">
                     <h1>My Three Js App</h1>
                     <RaceControls />
+                    <LeaderBoardItem />
                 </div>
                 <Scene></Scene>
             </div>

@@ -1,0 +1,67 @@
+@import url("https://fonts.googleapis.com/css2?family=Iceland&display=swap");
+.long-box,
+.small-box {
+  font-family: "Iceland";
+  /* outline: 3px solid var(--primary-light); */
+}
+.long-box {
+  top: 100px;
+  left: 20px;
+  /* just to move it slightly */
+  --primary-light: #cdcdcd;
+  --primary-dark: #1a1a1a;
+  --grey: #4d4d4d;
+  --par-width: 330px;
+  --par-height: 40px;
+  --child-width: 48px;
+  --child-height: calc(var(--par-height) * 1.5);
+  --child-offset: 12px;
+  outline: 3px solid var(--primary-light);
+  position: relative;
+  width: var(--par-width);
+  height: var(--par-height);
+  background-color: var(--primary-dark);
+  font-size: 30px;
+  color: var(--primary-light);
+}
+.small-box {
+  position: absolute;
+  top: calc(var(--par-height) / -4);
+  left: var(--child-offset);
+  background-color: var(--primary-light);
+  width: var(--child-width);
+  height: var(--child-height);
+  color: var(--primary-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.info {
+  margin-left: calc(var(--child-offset) + var(--child-width));
+  margin-right: var(--child-offset);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+
+  > .driverNameundStripe {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+    > span {
+      z-index: 1;
+    }
+
+    > svg {
+      position: absolute;
+      z-index: 0;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+  > .time {
+    color: var(--grey);
+  }
+}
