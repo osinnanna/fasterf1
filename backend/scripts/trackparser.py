@@ -13,7 +13,6 @@ pos = lap.get_pos_data()
 circuit_info = session.get_circuit_info()
 assert circuit_info is not None
 
-#%%
 track_points = []
 for i, row in pos.iterrows():
     track_points.append({
@@ -22,11 +21,28 @@ for i, row in pos.iterrows():
         "z": row["Y"]
     })
 
+
+def find_elevation_at_corner(corner_x, corner_y, track_data):
+    # since the corners data only has the x(left right) and y(depth) data, no Z(height) we have to derive it from the trackdata's point.
+
+    distances = np.sqrt(
+        (track_data["X"] - corner_x)**2 +
+        (track_data["Y"] - corner_y)**2
+    )
+
+    closest_idx = distances.idxmin()
+    return float(track_data.loc[closest_idx, "Z"])
+
 corners = []
 for _, corner in circuit_info.corners.iterrows():
+    elevation = find_elevation_at_corner(corner["X"], corner["Y"], pos)
     corners.append({
         "number": str(corner["Number"]),
-        "pos": {"x": float(corner["X"]), "y": 10, "z": float(corner["Y"])}
+        "pos": {
+            "x": float(corner["X"]),
+            "y": elevation + 10,
+            "z": float(corner["Y"])
+        }
     })
 
 data = {
@@ -35,6 +51,9 @@ data = {
     "corners": corners
 }
 
-with open("./../json/silverstone.json", "w") as f:
+with open("./../frontend/public/data/silverstone.json", "w") as f:
     json.dump(data, f)
-# %%
+
+print(f"Exported {session.event['Location']}")
+print(f"there were {len(track_points)} track points")
+print(f"No of corners: {len(corners)} corners")

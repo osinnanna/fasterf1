@@ -4,6 +4,7 @@ import Cube from "./Cube"
 import { Track } from "./Track";
 import { useRace } from "../context/RaceContext";
 import type { Driver, DriverTelemetry, PointsCoords } from "../model/types";
+import { CornerMarkers } from "./CornerMarkers";
 
 const CAMERAOPTIONS = { fov: 75, aspect: window.innerWidth / window.innerHeight, near: 0.1, far: 100000 };
 
@@ -54,10 +55,22 @@ export default function Scene() {
         const camera = new THREE.PerspectiveCamera(...Object.values(CAMERAOPTIONS));
         const renderer = new THREE.WebGLRenderer();
 
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(100, 200, 100);
+        scene.add(directionalLight);
+        // Lighting End
+
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
         Track(scene, trackData.path);
+
+        const cornerMarkers = CornerMarkers(scene, trackData.corners);
+        console.log(`Added ${trackData.corners.length} corner markers`);
 
         const driverCars: Array<{ mesh: THREE.Mesh; driver: Driver }> = [];
 
@@ -82,8 +95,6 @@ export default function Scene() {
 
         }
 
-        // camera.position.z = 5;
-        // camera.position.y = 7200;
         camera.position.set(400, 10000, 4400)
         camera.lookAt(new THREE.Vector3(4000, 0, 4000)) // good view
 
@@ -121,6 +132,11 @@ export default function Scene() {
 
 
         return () => {
+            cornerMarkers.forEach(marker => {
+                scene.remove(marker);
+                marker.geometry.dispose();
+                (marker.material as THREE.Material).dispose();
+            });
             window.removeEventListener("RACE_START", handleStart);
             cancelAnimationFrame(animationId);
             renderer.dispose();

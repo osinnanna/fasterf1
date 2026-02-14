@@ -86,7 +86,7 @@ race_data = {
 }
 
 
-output_path = "./../json/silverstone_race_lap_1.json"
+output_path = "./../frontend/public/data/silverstone_race_lap_1.json"
 with open(output_path, "w") as f:
     json.dump(race_data, f, indent=2)
 
