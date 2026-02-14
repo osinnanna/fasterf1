@@ -109,8 +109,23 @@ export default function Scene() {
         function animate() {
             animationId = requestAnimationFrame(animate);
 
-            if (raceData && clock.running) {
+            const raceClock = document.getElementById("stopwatch-display");
+
+            if (raceData && clock.running && raceClock) {
                 const raceTime = clock.getElapsedTime();
+
+                const hours = Math.floor(raceTime / 3600);
+                const minutes = Math.floor((raceTime % 3600) / 60);
+                const seconds = Math.floor(raceTime % 60);
+                const milliseconds = Math.floor((raceTime % 1) * 1000);
+
+                const formattedTime =
+                    hours.toString().padStart(2, "0") + ":" +
+                    minutes.toString().padStart(2, "0") + ":" +
+                    seconds.toString().padStart(2, "0") + "." +
+                    milliseconds.toString().padStart(3, "0");
+
+                raceClock.textContent = formattedTime;
 
                 driverCars.forEach(({ mesh, driver }) => {
                     const position = getLerpPosition(driver.telemetry, raceTime, raceData.fps, driver.finishTime);

@@ -1,9 +1,9 @@
-import "./LeaderBoardItem.css"
+import "./styles/LeaderBoardItem.css"
 
 export const LeaderBoardItem = () => {
 
     return (
-        <div className="long-box">
+        <div className="long-box designdiv">
             <div className="small-box">1</div>
             <div className="info">
                 <div className="driverNameundStripe">

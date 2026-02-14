@@ -1,0 +1,20 @@
+:root {
+  --primary-light: #cdcdcd;
+  --primary-dark: #1a1a1a;
+  --grey: #4d4d4d;
+  --outline-main: 3px solid var(--primary-light);
+  --font-size-main: 30px;
+
+  /* body {
+    font-family: "Iceland";
+  } */
+
+  .designdiv {
+    font-family: "Iceland"; 
+    /* make iceland general if no other font */
+    outline: var(--outline-main);
+    background-color: var(--primary-dark);
+    font-size: var(--font-size-main);
+    color: var(--primary-light);
+  }
+}
