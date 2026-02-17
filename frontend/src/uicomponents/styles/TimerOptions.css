@@ -25,12 +25,12 @@
 }
 
 .countdown-display {
+  font-family: "Iceland";
   position: absolute;
-  top: 50%;
+  /* top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
   font-size: 8rem;
-  font-family: sans-serif;
   color: #fff;
   text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
   pointer-events: none;

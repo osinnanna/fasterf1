@@ -3,7 +3,7 @@ import "./styles/TimerOptions.css"
 import { startCountdown } from "../components/countdown";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faPlay } from '@fortawesome/free-solid-svg-icons'
+import { faPause, faPlay } from '@fortawesome/free-solid-svg-icons'
 
 library.add(faPlay)
 export const TimerOptions = () => {
@@ -26,14 +26,19 @@ export const TimerOptions = () => {
     }
 
     return (
-        <div id="timerandoptions">
-            <div className="designdiv" id="stopwatch-display">
-                00:00:00.000
+        <>
+            <div id="timerandoptions">
+                <button onClick={handleStartSequence} className="designdiv startbutton">
+                    <FontAwesomeIcon icon={faPause} size="xs" />
+                </button>
+                <div className="designdiv" id="stopwatch-display">
+                    00:00:00.000
+                </div>
+                <button onClick={handleStartSequence} className="designdiv startbutton">
+                    <FontAwesomeIcon icon={faPlay} size="xs" />
+                </button>
             </div>
             <div ref={displayRef} className="countdown-display"></div>
-            <button onClick={handleStartSequence} className="designdiv startbutton">
-                <FontAwesomeIcon icon={faPlay} size="xs" />
-            </button>
-        </div>
+        </>
     )
 }
