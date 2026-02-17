@@ -33,7 +33,6 @@ function getLerpPosition(
 
     if (!currentFrame || !nextFrame) return { x: 0, y: 0, z: 0 };
 
-
     // We are going to return the slope (depended value based on a given value so it will smoothly transition)
     return {
         x: currentFrame.x + (nextFrame.x - currentFrame.x) * alpha,
@@ -41,19 +40,36 @@ function getLerpPosition(
         z: currentFrame.z + (nextFrame.z - currentFrame.z) * alpha,
     }
 }
-export default function Scene() {
-    const sceneRef = useRef<THREE.Scene | null>(null);
-    const { raceData, trackData, loading, error } = useRace();
 
+export default function Scene() {
+    const { raceData, trackData, raceTime, isPlaying, loading, error } = useRace();
+
+    const sceneRef = useRef<THREE.Scene | null>(null);
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+    const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+    const driverCarsRef = useRef<Array<{mesh: THREE.Mesh; driver: Driver}>>([]);
+    
+    const raceTimeRef = useRef(0);
+    const isPlayingRef = useRef(false);
 
     useEffect(() => {
-        if (!trackData) return;
-        const clock = new THREE.Clock(false);
+        raceTimeRef.current = raceTime;
+        isPlayingRef.current = isPlaying;
+    }, [raceTime, isPlaying]);
 
-        sceneRef.current = new THREE.Scene();
-        const scene = sceneRef.current;
+    useEffect(() => {
+        if (!trackData || !raceData) return;
+
+        const scene = new THREE.Scene();
+        sceneRef.current = scene;
+
         const camera = new THREE.PerspectiveCamera(...Object.values(CAMERAOPTIONS));
+        cameraRef.current = camera;
+
         const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        rendererRef.current = renderer;
 
         // Lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -64,104 +80,102 @@ export default function Scene() {
         scene.add(directionalLight);
         // Lighting End
 
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
+        // Track und Corner markers
         Track(scene, trackData.path);
-
         const cornerMarkers = CornerMarkers(scene, trackData.corners);
         console.log(`Added ${trackData.corners.length} corner markers`);
 
+        // Drivers data
         const driverCars: Array<{ mesh: THREE.Mesh; driver: Driver }> = [];
+        console.log(`Creating ${raceData.drivers.length} driverCars`);
 
-        if (raceData) {
-            console.log(`Creating ${raceData.drivers.length} driverCars`);
+        raceData.drivers.forEach((driver) => {
+            const carMesh = Cube(scene);
 
-            raceData.drivers.forEach((driver) => {
-                const carMesh = Cube(scene);
+            driverCars.push({
+                mesh: carMesh,
+                driver: driver
+            });
 
-                driverCars.push({
-                    mesh: carMesh,
-                    driver: driver
-                });
+            const startingPos = driver.telemetry[0];
+            if (startingPos) {
+                carMesh.position.set(startingPos.x, startingPos.y, startingPos.z);
+            }
 
-                const startingPos = driver.telemetry[0];
-                if (startingPos) {
-                    carMesh.position.set(startingPos.x, startingPos.y, startingPos.z)
-                }
+            console.log(`Created car for ${driver.id}`);
+        });
+        driverCarsRef.current = driverCars;
 
-                console.log(`Created car for ${driver.id}`)
-            })
+        camera.position.set(400, 10000, 4400);
+        camera.lookAt(new THREE.Vector3(4000, 0, 4000)); // good view
 
-        }
+        return () => {
+            document.body.removeChild(renderer.domElement);
+            renderer.dispose();
 
-        camera.position.set(400, 10000, 4400)
-        camera.lookAt(new THREE.Vector3(4000, 0, 4000)) // good view
+            cornerMarkers.forEach(marker => {
+                scene.remove(marker);
+                marker.geometry.dispose();
+                (marker.material as THREE.Material).dispose();
+            });
+        };
+    }, [trackData, raceData]);
 
-        const handleStart = () => {
-            console.log("Race started via event");
-            clock.start();
-        }
+    // separated animation loop into separate files
+    useEffect(() => {
+        if (!sceneRef.current || !cameraRef.current || !rendererRef.current || !raceData) return;
 
-        window.addEventListener("RACE_START", handleStart);
+        const scene = sceneRef.current;
+        const camera = cameraRef.current;
+        const renderer = rendererRef.current;
+        const driverCars = driverCarsRef.current;
+        const fps = raceData.fps;
 
         let animationId: number;
+
         function animate() {
             animationId = requestAnimationFrame(animate);
 
+            const currentRaceTime = raceTimeRef.current;
+            // const currentlyPlaying = isPlayingRef.current;
+
             const raceClock = document.getElementById("stopwatch-display");
+            if (raceClock) {
+                const hours = Math.floor(currentRaceTime / 3600);
+                const minutes = Math.floor((currentRaceTime % 3600) / 60);
+                const seconds = Math.floor(currentRaceTime % 60);
+                const milliseconds = Math.floor((currentRaceTime % 1) * 1000);
 
-            if (raceData && clock.running && raceClock) {
-                const raceTime = clock.getElapsedTime();
-
-                const hours = Math.floor(raceTime / 3600);
-                const minutes = Math.floor((raceTime % 3600) / 60);
-                const seconds = Math.floor(raceTime % 60);
-                const milliseconds = Math.floor((raceTime % 1) * 1000);
-
-                const formattedTime =
-                    hours.toString().padStart(2, "0") + ":" +
-                    minutes.toString().padStart(2, "0") + ":" +
-                    seconds.toString().padStart(2, "0") + "." +
-                    milliseconds.toString().padStart(3, "0");
-
-                raceClock.textContent = formattedTime;
-
-                driverCars.forEach(({ mesh, driver }) => {
-                    const position = getLerpPosition(driver.telemetry, raceTime, raceData.fps, driver.finishTime);
-                    mesh.position.set(position.x, position.y, position.z);
-                });
-            } else if (raceData) {
-                driverCars.forEach(({ mesh, driver }) => {
-                    const startingPos = driver.telemetry[0];
-                    if (startingPos) {
-                        mesh.position.set(startingPos.x, startingPos.y, startingPos.z);
-                    }
-                })
+                raceClock.textContent =
+                    `${hours.toString().padStart(2, "0")}:` +
+                    `${minutes.toString().padStart(2, "0")}:` +
+                    `${seconds.toString().padStart(2, "0")}.` +
+                    `${milliseconds.toString().padStart(3, "0")}`;
             }
+
+            driverCars.forEach(({ mesh, driver }) => {
+                const position = getLerpPosition(
+                    driver.telemetry,
+                    currentRaceTime,
+                    fps,
+                    driver.finishTime as number
+                );
+                mesh.position.set(position.x, position.y, position.z);
+            });
 
             renderer.render(scene, camera);
         }
 
         animate();
 
-
         return () => {
-            cornerMarkers.forEach(marker => {
-                scene.remove(marker);
-                marker.geometry.dispose();
-                (marker.material as THREE.Material).dispose();
-            });
-            window.removeEventListener("RACE_START", handleStart);
             cancelAnimationFrame(animationId);
-            renderer.dispose();
-            document.body.removeChild(renderer.domElement);
         };
-    }, [trackData, raceData]);
+    }, [raceData]);
 
-    if (loading) return <div>Loading Race Data</div>
-    if (error) return <div>Error: {error.message}</div>
-    if (!trackData) return <div>There is no Race Data Available</div>
+    if (loading) return <div>Loading Race Data</div>;
+    if (error) return <div>Error: {error.message}</div>;
+    if (!trackData || !raceData) return <div>There is no Race Data Available</div>;
 
     return null;
 }

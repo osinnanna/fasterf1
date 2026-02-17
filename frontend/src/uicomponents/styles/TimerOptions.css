@@ -15,7 +15,7 @@
   width: 400px;
   text-align: center;
 }
-.designdiv.startbutton {
+.designdiv.startbutton, .designdiv.pausebutton {
   height: inherit;
   display: flex;
   aspect-ratio: 1 / 1;
