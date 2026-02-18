@@ -1,7 +1,6 @@
-import "./styles/LeaderBoardItem.css"
+import "./styles/LeaderBoard.css"
 
 export const LeaderBoardItem = () => {
-
     return (
         <div className="long-box designdiv">
             <div className="small-box">1</div>
@@ -14,6 +13,17 @@ export const LeaderBoardItem = () => {
                 </div>
                 <div className="time">0:00:00:000</div>
             </div>
+        </div>
+    )
+}
+
+export const LeaderBoard = () => {
+    return (
+        <div style={{color: "#cdcdcd", display: "flex", gap: "24px", flexDirection: "column"}}>
+            <h1 style={{textAlign: "center"}}>LEADERBOARD</h1>
+            <LeaderBoardItem />
+            <LeaderBoardItem />
+            <LeaderBoardItem />
         </div>
     )
 }

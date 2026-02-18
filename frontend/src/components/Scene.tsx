@@ -6,7 +6,7 @@ import { useRace } from "../context/RaceContext";
 import type { Driver, DriverTelemetry, PointsCoords } from "../model/types";
 import { CornerMarkers } from "./CornerMarkers";
 
-const CAMERAOPTIONS = { fov: 75, aspect: window.innerWidth / window.innerHeight, near: 0.1, far: 100000 };
+const CAMERAOPTIONS = { fov: 75, near: 0.1, far: 100000 };
 
 function getLerpPosition(
     telemetry: DriverTelemetry[],
@@ -42,6 +42,7 @@ function getLerpPosition(
 }
 
 export default function Scene() {
+    const mountRef = useRef<HTMLDivElement>(null);
     const { raceData, trackData, raceTime, isPlaying, loading, error } = useRace();
 
     const sceneRef = useRef<THREE.Scene | null>(null);
@@ -58,18 +59,30 @@ export default function Scene() {
     }, [raceTime, isPlaying]);
 
     useEffect(() => {
-        if (!trackData || !raceData) return;
+        if (!trackData || !raceData || !mountRef.current) return;
+        const mount = mountRef.current;
 
         const scene = new THREE.Scene();
         sceneRef.current = scene;
 
-        const camera = new THREE.PerspectiveCamera(...Object.values(CAMERAOPTIONS));
+        const camera = new THREE.PerspectiveCamera(CAMERAOPTIONS.fov, mount.clientWidth / mount.clientHeight, CAMERAOPTIONS.near, CAMERAOPTIONS.far);
         cameraRef.current = camera;
 
         const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+        renderer.setSize(mount.clientWidth, mount.clientHeight);
+        mount.appendChild(renderer.domElement);
         rendererRef.current = renderer;
+        
+        const handleResize = () => {
+            if (cameraRef.current && rendererRef.current && mountRef.current) {
+                const { clientWidth, clientHeight } = mountRef.current;
+                cameraRef.current.aspect = clientWidth / clientHeight;
+                cameraRef.current.updateProjectionMatrix();
+                rendererRef.current.setSize(clientWidth, clientHeight);
+            }
+        };
+        
+        window.addEventListener('resize', handleResize);
 
         // Lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -110,7 +123,10 @@ export default function Scene() {
         camera.lookAt(new THREE.Vector3(4000, 0, 4000)); // good view
 
         return () => {
-            document.body.removeChild(renderer.domElement);
+            window.removeEventListener('resize', handleResize);
+            if (mount && rendererRef.current) {
+                mount.removeChild(rendererRef.current.domElement);
+            }
             renderer.dispose();
 
             cornerMarkers.forEach(marker => {
@@ -177,5 +193,5 @@ export default function Scene() {
     if (error) return <div>Error: {error.message}</div>;
     if (!trackData || !raceData) return <div>There is no Race Data Available</div>;
 
-    return null;
+    return <div ref={mountRef} style={{ width: '100%', height: '100%' }} />;
 }

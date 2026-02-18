@@ -1,27 +1,19 @@
-@import url("https://fonts.googleapis.com/css2?family=Iceland&display=swap");
 @import url(./generalstyles.css);
-.long-box,
-.small-box {
-  font-family: "Iceland";
-  /* outline: 3px solid var(--primary-light); */
-}
 
+/* Leaderboard Item */
 .designdiv.long-box {
   position: relative;
-  /* top: 100px;
-  left: 20px; */
-  /* just to move it slightly */
   --par-width: 330px;
   --par-height: 40px;
   --child-width: 48px;
-  --child-height: calc(var(--par-height) * 1.5);
+  --child-height: calc(var(--par-height) * 1.4);
   --child-offset: 12px;
   width: var(--par-width);
   height: var(--par-height);
 }
 .small-box {
   position: absolute;
-  top: calc(var(--par-height) / -4);
+  top: calc(var(--par-height) / -4.8);
   left: var(--child-offset);
   background-color: var(--primary-light);
   width: var(--child-width);

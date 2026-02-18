@@ -29,7 +29,7 @@ export const TimerOptions = () => {
     }
 
     return (
-        <>
+        <header>
             <div id="timerandoptions">
                 <button onClick={handlePause} className="designdiv pausebutton" disabled={!isPlaying}>
                     <FontAwesomeIcon icon={faPause} size="xs" />
@@ -37,11 +37,11 @@ export const TimerOptions = () => {
                 <div className="designdiv" id="stopwatch-display">
                     00:00:00.000
                 </div>
-                <button onClick={handleStartSequence} className="designdiv startbutton">
+                <button onClick={handleStartSequence} className="designdiv startbutton" disabled={isPlaying}>
                     <FontAwesomeIcon icon={faPlay} size="xs" />
                 </button>
             </div>
             <div ref={displayRef} className="countdown-display"></div>
-        </>
+        </header>
     )
 }
