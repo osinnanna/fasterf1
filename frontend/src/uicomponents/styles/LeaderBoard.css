@@ -1,6 +1,30 @@
 @import url(./generalstyles.css);
 
-/* Leaderboard Item */
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-dark) var(--grey);
+}
+
+.leaderboard-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  gap: 12px;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  max-height: 900px;
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .designdiv.long-box {
   position: relative;
   --par-width: 330px;
@@ -10,7 +34,11 @@
   --child-offset: 12px;
   width: var(--par-width);
   height: var(--par-height);
+  
+  /* Add transition for smooth movement */
+  transition: all 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
+
 .small-box {
   position: absolute;
   top: calc(var(--par-height) / -4.8);

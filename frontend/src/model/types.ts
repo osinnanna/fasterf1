@@ -34,3 +34,11 @@ export interface RaceData {
     maxDuration: Number;
     drivers: Driver[];
 }
+
+export interface LeaderboardEntry {
+    position: number;
+    driver: Driver;
+    currentTime: number;
+    gap: string;
+    isFinished: boolean;
+}
