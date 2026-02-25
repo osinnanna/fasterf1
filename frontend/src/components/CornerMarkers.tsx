@@ -9,9 +9,9 @@ export function CornerMarkers(
 
     // similar to blibs of circles just above the track
     corners.forEach((corner) => {
-        const geometry = new THREE.SphereGeometry(15, 16, 16);
+        const geometry = new THREE.SphereGeometry(150, 160, 160);
         const material = new THREE.MeshBasicMaterial({
-            color: 0xffff00,
+            color: 0xd80000,
             transparent: true,
             opacity: 0.8
         });

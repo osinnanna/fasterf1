@@ -8,13 +8,22 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-/* * {
-  outline: 1px solid red !important;
-} */
 * {
+  /* outline: 1px solid red !important; */
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+body {
+  max-height: 100vh;
+  max-width: 100vw;
+  overflow: clip;
+  /*Issue with dom overflowing needs FIX (so no more clipping)*/
 }
 
 a {

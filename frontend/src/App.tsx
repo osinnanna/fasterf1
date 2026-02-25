@@ -1,6 +1,6 @@
 import Scene from "./components/Scene";
 import { RaceProvider } from "./context/RaceContext";
-import { UILayout } from "./uicomponents/UILayout";
+import { UILayout } from "./components-ui/UILayout";
 
 export default function App() {
     return (

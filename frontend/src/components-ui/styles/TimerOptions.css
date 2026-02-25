@@ -26,17 +26,19 @@ header {
   align-items: center;
   align-self: center;
 }
-/* Disabled styles in main index */
 
 .countdown-display {
   font-family: "Iceland";
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   font-size: 8rem;
   color: #fff;
   text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
   pointer-events: none;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: center;
 }
-/* change styling */
+/* fixed styling */

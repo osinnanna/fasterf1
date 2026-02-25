@@ -1,0 +1,33 @@
+#camera-controller {
+  display: flex;
+  color: black !important;
+  /* width: fit-content; */
+  justify-content: center;
+  margin: 1em 0;
+}
+
+#driver-selector {
+  display: flex;
+  align-items: center;
+  gap: 1.25em;
+
+  > *.designdiv {
+    border-radius: 999em;
+    padding: 0.1em 0.2em;
+  }
+  > *.designdiv.driver-name {
+    text-align: center;
+    width: 3.825em;
+  }
+}
+
+button.designdiv {
+  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: fit-content;
+  aspect-ratio: 1/1;
+}
+
+

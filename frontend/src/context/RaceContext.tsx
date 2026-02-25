@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import type { RaceData, TrackData } from "../model/types";
+import type { Driver, RaceData, TrackData } from "../model/types";
 import { useRaceData } from "../hooks/useRaceData";
 import { useTrackData } from "../hooks/useTrackData";
 
@@ -21,6 +21,15 @@ interface RaceContextValue {
     pause: () => void;
     seek: (time: number) => void;
     setPlaybackSpeed: (speed: number) => void;
+
+    // Camera state
+    cameraMode: "overview" | "follow";
+    selectedDriverIndex: number;
+    selectedDriver: Driver | null;
+
+    setCameraMode: (mode: "overview" | "follow") => void;
+    nextDriver: () => void;
+    prevDriver: () => void;
 }
 
 const RaceContext = createContext<RaceContextValue | undefined>(undefined);
@@ -38,6 +47,10 @@ export function RaceProvider({ children }: {children : any}) {
     const lastFrameTimeRef = useRef(performance.now());
 
     const duration = raceData?.maxDuration as number || 0;
+
+    // camera state and seting previous and next controls
+    const [cameraMode, setCameraMode] = useState<"overview" | "follow">("overview");
+    const [selectedDriverIndex, setSelectedDriverIndex] = useState<number>(0);
 
     // making playback controls
 
@@ -62,6 +75,22 @@ export function RaceProvider({ children }: {children : any}) {
         lastTimeRef.current = clampedTime;
         setRaceTime(clampedTime);
     };
+
+    // implement camera control
+    const selectedDriver = raceData?.drivers[selectedDriverIndex] ?? null;
+
+    const nextDriver = () => {
+        if(!raceData) return;
+        setSelectedDriverIndex(prev => prev === raceData.drivers.length - 1 ? 0 : prev + 1);
+        // if the prev option is the last object in the array then we start from the begginnig. if not we move to the next item
+    }
+    const prevDriver = () => {
+        if (!raceData) return;
+        console.log(`prevDriver clicked: current index ${selectedDriverIndex}, drivers length ${raceData.drivers.length}`);
+        setSelectedDriverIndex(prev => prev === 0 ? raceData.drivers.length - 1 : prev - 1);
+        // if the prev option is the first opject in the array then new previous would be the last object in the array. and if not we move to the object before the previous object
+        // this is essentially a wrap to ensure we there's no breaking and it acts as a loop.
+    }
 
     useEffect(() => {
         if (!isPlaying) return;
@@ -109,7 +138,14 @@ export function RaceProvider({ children }: {children : any}) {
         play,
         pause,
         seek,
-        setPlaybackSpeed
+        setPlaybackSpeed,
+
+        cameraMode,
+        selectedDriverIndex,
+        selectedDriver,
+        setCameraMode,
+        nextDriver,
+        prevDriver
     };
 
     return <RaceContext.Provider value={value}>{children}</RaceContext.Provider>;

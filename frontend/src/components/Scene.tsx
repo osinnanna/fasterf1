@@ -43,7 +43,7 @@ function getLerpPosition(
 
 export default function Scene() {
     const mountRef = useRef<HTMLDivElement>(null);
-    const { raceData, trackData, raceTime, isPlaying, loading, error } = useRace();
+    const { raceData, trackData, raceTime, isPlaying, loading, error, cameraMode, selectedDriver } = useRace();
 
     const sceneRef = useRef<THREE.Scene | null>(null);
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -52,11 +52,15 @@ export default function Scene() {
     
     const raceTimeRef = useRef(0);
     const isPlayingRef = useRef(false);
+    const cameraModeRef = useRef<"overview" | "follow">("overview");
+    const selectedDriverRef = useRef<Driver | null>(null);
 
     useEffect(() => {
         raceTimeRef.current = raceTime;
         isPlayingRef.current = isPlaying;
-    }, [raceTime, isPlaying]);
+        cameraModeRef.current = cameraMode;
+        selectedDriverRef.current = selectedDriver;
+    }, [raceTime, isPlaying, cameraMode, selectedDriver]);
 
     useEffect(() => {
         if (!trackData || !raceData || !mountRef.current) return;
@@ -153,8 +157,10 @@ export default function Scene() {
             animationId = requestAnimationFrame(animate);
 
             const currentRaceTime = raceTimeRef.current;
-            // const currentlyPlaying = isPlayingRef.current;
+            const currentCameraMode = cameraModeRef.current;
+            const currentSelectedDriver = selectedDriverRef.current;
 
+            // Update current clock
             const raceClock = document.getElementById("stopwatch-display");
             if (raceClock) {
                 const hours = Math.floor(currentRaceTime / 3600);
@@ -169,6 +175,7 @@ export default function Scene() {
                     `${milliseconds.toString().padStart(3, "0")}`;
             }
 
+            // updating th drivers posiitions
             driverCars.forEach(({ mesh, driver }) => {
                 const position = getLerpPosition(
                     driver.telemetry,
@@ -179,6 +186,48 @@ export default function Scene() {
                 mesh.position.set(position.x, position.y, position.z);
             });
 
+            if (currentCameraMode === "follow" && currentSelectedDriver) {
+                // first getting the current possiton of the driver
+                const currentPos = getLerpPosition(
+                    currentSelectedDriver.telemetry,
+                    currentRaceTime,
+                    fps,
+                    currentSelectedDriver.finishTime as number
+                );
+                // then getting the next postiiton
+                const nextPos = getLerpPosition(
+                    currentSelectedDriver.telemetry,
+                    currentRaceTime + (1 / fps),
+                    fps,
+                    currentSelectedDriver.finishTime as number
+                );
+                const direction = new THREE.Vector3(
+                    nextPos.x - currentPos.x,
+                    nextPos.y - currentPos.y,
+                    nextPos.z - currentPos.z,
+                ).normalize();
+
+                // offsetting the camera to be behind the current selected car
+                const cameraOffset = new THREE.Vector3(
+                    -direction.x * 600,
+                    300,
+                    -direction.z * 600
+                );
+                const targetCameraPos = new THREE.Vector3(
+                    currentPos.x + cameraOffset.x,
+                    currentPos.y + cameraOffset.y,
+                    currentPos.z + cameraOffset.z,
+                );
+                camera.position.lerp(targetCameraPos, 0.1);
+
+                const lookAtTarget = new THREE.Vector3(
+                    currentPos.x + direction.x * 200,
+                    currentPos.y,
+                    currentPos.z + direction.z * 200,
+                );
+
+                camera.lookAt(lookAtTarget);
+            }
             renderer.render(scene, camera);
         }
 

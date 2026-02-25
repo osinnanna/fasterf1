@@ -34,9 +34,7 @@
   --child-offset: 12px;
   width: var(--par-width);
   height: var(--par-height);
-  
-  /* Add transition for smooth movement */
-  transition: all 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: all 1s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .small-box {
@@ -74,6 +72,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      opacity: 60%; /*posibly alternating opacitys proportional to position in race*/
     }
   }
   > .time {
